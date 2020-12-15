@@ -124,7 +124,7 @@ export LUPDATE = @ac_lupdate@
 export LRELEASE = @ac_lrelease@
 
 
-all:	core ui @ac_all_targets@
+all:	core @ac_all_targets@
 
 core:	$(name).mak $(sources) $(headers)
 	@$(MAKE) -f $(name).mak
@@ -132,7 +132,7 @@ core:	$(name).mak $(sources) $(headers)
 ui:	$(name_ui).mak $(sources_ui) $(headers_ui) $(resources_ui) ${forms_ui} core
 	@$(MAKE) -f $(name_ui).mak
 
-lv2:	$(name_lv2).mak $(sources_lv2) $(headers_lv2) ui core
+lv2:	$(name_lv2).mak $(sources_lv2) $(headers_lv2) core
 	@$(MAKE) -f $(name_lv2).mak
 
 jack:	$(name_jack).mak $(sources_jack) $(headers_jack) ui core
@@ -203,7 +203,7 @@ clean_jack:	$(name_jack).mak
 	@rm -f $(name_jack).mak
 
 
-install:	install_core install_ui @ac_install_targets@
+install:	install_core @ac_install_targets@
 
 uninstall:	uninstall_core uninstall_ui @ac_uninstall_targets@
 

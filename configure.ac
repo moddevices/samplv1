@@ -3,7 +3,7 @@ AC_INIT(samplv1, 0.9.18, rncbc@rncbc.org)
 
 AC_CONFIG_SRCDIR(src/samplv1.cpp)
 AC_CONFIG_HEADERS(src/config.h)
-AC_CONFIG_FILES(Makefile samplv1.spec src/src_core.pri src/src_ui.pri src/src_jack.pri src/src_lv2.pri)
+AC_CONFIG_FILES(Makefile samplv1.spec src/src_core.pri src/src_jack.pri src/src_lv2.pri)
 
 # Build version string.
 AC_CACHE_VAL([ac_cv_build_version], [
@@ -388,58 +388,8 @@ if test "x$ac_moc" = "xno"; then
 fi
 AC_SUBST(ac_moc)
 
-# Check for Qt uic utility.
-AC_PATH_TOOL(ac_uic, uic, [no], $ac_path)
-if test "x$ac_uic" = "xno"; then
-   AC_MSG_ERROR([uic $ac_errmsg])
-fi
-AC_SUBST(ac_uic)
-
-
-# Check for Qt lupdate utility.
-AC_PATH_TOOL(ac_lupdate, lupdate, [no], $ac_path)
-if test "x$ac_lupdate" = "xno"; then
-   if test $ac_qt_version_major -lt 6; then
-      AC_PATH_TOOL(ac_cv_lupdate, lupdate-qt5, [no], $ac_path)
-   else
-      AC_PATH_TOOL(ac_cv_lupdate, lupdate-qt6, [no], $ac_path)
-   fi
-   if test "x$ac_cv_lupdate" = "xno"; then
-      if test $ac_qt_version_major -lt 6; then
-         AC_MSG_ERROR([lupdate $ac_errmsg (qt5-linguist)])
-      else
-         AC_MSG_ERROR([lupdate $ac_errmsg (qt6-linguist)])
-      fi
-   else
-      ac_lupdate=$ac_cv_lupdate;
-   fi
-fi
-AC_SUBST(ac_lupdate)
-
-# Check for Qt lrelease utility.
-AC_PATH_TOOL(ac_lrelease, lrelease, [no], $ac_path)
-if test "x$ac_lrelease" = "xno"; then
-   if test $ac_qt_version_major -lt 6; then
-      AC_PATH_TOOL(ac_cv_lrelease, lrelease-qt5, [no], $ac_path)
-   else
-      AC_PATH_TOOL(ac_cv_lrelease, lrelease-qt6, [no], $ac_path)
-   fi
-   if test "x$ac_cv_lrelease" = "xno"; then
-      if test $ac_qt_version_major -lt 6; then
-         AC_MSG_ERROR([lrelease $ac_errmsg (qt5-linguist)])
-      else
-         AC_MSG_ERROR([lrelease $ac_errmsg (qt6-linguist)])
-      fi
-   else
-      ac_lrelease=$ac_cv_lrelease;
-   fi
-fi
-AC_SUBST(ac_lrelease)
-
-
 # Checks for libraries.
 AC_CHECK_LIB(m, main)
-AC_CHECK_LIB(X11, main)
 AC_CHECK_LIB(Xext, main)
 
 ac_cflags="-ffast-math $ac_cflags"

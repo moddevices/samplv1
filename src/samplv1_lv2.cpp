@@ -40,6 +40,7 @@
 #include "lv2/lv2plug.in/ns/ext/patch/patch.h"
 #endif
 
+
 #ifndef CONFIG_LV2_ATOM_FORGE_OBJECT
 #define lv2_atom_forge_object(forge, frame, id, otype) \
 		lv2_atom_forge_blank(forge, frame, id, otype)
@@ -64,7 +65,9 @@
 #include <stdlib.h>
 #include <math.h>
 
+#ifndef CONFIG_LV2_MOD
 #include <QApplication>
+#endif
 #include <QDomDocument>
 #include <QFileInfo>
 
@@ -541,12 +544,16 @@ uint32_t samplv1_lv2::urid_map ( const char *uri ) const
 // samplv1_lv2 - Instantiation and cleanup.
 //
 
+#ifndef CONFIG_LV2_MOD
 QApplication *samplv1_lv2::g_qapp_instance = nullptr;
 unsigned int  samplv1_lv2::g_qapp_refcount = 0;
+#endif
 
 
 void samplv1_lv2::qapp_instantiate (void)
 {
+
+#ifndef CONFIG_LV2_MOD
 	if (qApp == nullptr && g_qapp_instance == nullptr) {
 		static int s_argc = 1;
 		static const char *s_argv[] = { SAMPLV1_TITLE, nullptr };
@@ -555,21 +562,29 @@ void samplv1_lv2::qapp_instantiate (void)
 	}
 
 	if (g_qapp_instance) ++g_qapp_refcount;
+#endif
 }
 
 
 void samplv1_lv2::qapp_cleanup (void)
 {
+
+#ifndef CONFIG_LV2_MOD
 	if (g_qapp_instance && --g_qapp_refcount == 0) {
 		delete g_qapp_instance;
 		g_qapp_instance = nullptr;
 	}
+#endif
 }
 
 
 QApplication *samplv1_lv2::qapp_instance (void)
 {
+#ifndef CONFIG_LV2_MOD
 	return g_qapp_instance;
+#else
+	return nullptr;
+#endif
 }
 
 

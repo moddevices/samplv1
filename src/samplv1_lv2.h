@@ -30,6 +30,8 @@
 
 #include "lv2/lv2plug.in/ns/ext/worker/worker.h"
 
+#define CONFIG_LV2_MOD
+
 #define SAMPLV1_LV2_URI "http://samplv1.sourceforge.net/lv2"
 #define SAMPLV1_LV2_PREFIX SAMPLV1_LV2_URI "#"
 
@@ -39,8 +41,10 @@
 #include <QByteArray>
 #endif
 
+//#ifndef CONFIG_LV2_MOD
 // Forward decls.
 class QApplication;
+//#endif
 
 
 //-------------------------------------------------------------------------
@@ -188,8 +192,10 @@ private:
 	QByteArray m_aProgramName;
 #endif
 
+#ifndef CONFIG_LV2_MOD
 	static QApplication *g_qapp_instance;
 	static unsigned int  g_qapp_refcount;
+#endif
 };
 
 
