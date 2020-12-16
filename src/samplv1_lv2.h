@@ -30,7 +30,7 @@
 
 #include "lv2/lv2plug.in/ns/ext/worker/worker.h"
 
-#define CONFIG_LV2_MOD
+#define CONFIG_LV2_NO_GUI
 
 #define SAMPLV1_LV2_URI "http://samplv1.sourceforge.net/lv2"
 #define SAMPLV1_LV2_PREFIX SAMPLV1_LV2_URI "#"
@@ -41,7 +41,7 @@
 #include <QByteArray>
 #endif
 
-//#ifndef CONFIG_LV2_MOD
+//#ifndef CONFIG_LV2_NO_GUI
 // Forward decls.
 class QApplication;
 //#endif
@@ -92,6 +92,8 @@ public:
 
 	static QApplication *qapp_instance();
 
+	bool sample_changed;
+
 protected:
 
 	void updatePreset(bool bDirty);
@@ -119,9 +121,11 @@ protected:
 	bool port_events();
 #endif
 
+
 private:
 
 	LV2_URID_Map *m_urid_map;
+
 
 	struct lv2_urids
 	{
@@ -192,7 +196,7 @@ private:
 	QByteArray m_aProgramName;
 #endif
 
-#ifndef CONFIG_LV2_MOD
+#ifndef CONFIG_LV2_NO_GUI
 	static QApplication *g_qapp_instance;
 	static unsigned int  g_qapp_refcount;
 #endif

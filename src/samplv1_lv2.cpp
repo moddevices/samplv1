@@ -65,7 +65,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#ifndef CONFIG_LV2_MOD
+#ifndef CONFIG_LV2_NO_GUI
 #include <QApplication>
 #endif
 #include <QDomDocument>
@@ -97,6 +97,8 @@ samplv1_lv2::samplv1_lv2 (
 	m_atom_out = nullptr;
 	m_schedule = nullptr;
 	m_ndelta   = 0;
+
+	sample_changed = false;
 
 	const LV2_Options_Option *host_options = nullptr;
 
@@ -228,7 +230,7 @@ samplv1_lv2::samplv1_lv2 (
 				buffer_size = block_length;
 		}
  	}
- 
+
 	samplv1::setBufferSize(buffer_size);
 
 	lv2_atom_forge_init(&m_forge, m_urid_map);
@@ -291,6 +293,24 @@ void samplv1_lv2::run ( uint32_t nframes )
 		lv2_atom_forge_sequence_head(&m_forge, &m_notify_frame, 0);
 	}
 
+	// Send update to UI if sample has changed due to state restore
+	if (sample_changed) {
+		lv2_atom_forge_frame_time(&m_forge, 0);
+		LV2_Atom_Forge_Frame frame;
+		LV2_Atom* set = (LV2_Atom*)lv2_atom_forge_object(
+				&m_forge, &frame, 0, m_urids.patch_Set);
+
+		lv2_atom_forge_key(&m_forge, m_urids.patch_property);
+		lv2_atom_forge_urid(&m_forge, m_urids.p101_sample_file);
+		lv2_atom_forge_key(&m_forge, m_urids.patch_value);
+		lv2_atom_forge_path(&m_forge, samplv1::sampleFile(),
+				strlen(samplv1::sampleFile()));
+
+		lv2_atom_forge_pop(&m_forge, &frame);
+
+		sample_changed = false;
+	}
+
 	uint32_t ndelta = 0;
 
 	if (m_atom_in) {
@@ -328,7 +348,7 @@ void samplv1_lv2::run ( uint32_t nframes )
 					}
 				}
 			#ifdef CONFIG_LV2_PATCH
-				else 
+				else
 				if (object->body.otype == m_urids.patch_Set) {
 					// set property value
 					const LV2_Atom *property = nullptr;
@@ -544,7 +564,7 @@ uint32_t samplv1_lv2::urid_map ( const char *uri ) const
 // samplv1_lv2 - Instantiation and cleanup.
 //
 
-#ifndef CONFIG_LV2_MOD
+#ifndef CONFIG_LV2_NO_GUI
 QApplication *samplv1_lv2::g_qapp_instance = nullptr;
 unsigned int  samplv1_lv2::g_qapp_refcount = 0;
 #endif
@@ -553,7 +573,7 @@ unsigned int  samplv1_lv2::g_qapp_refcount = 0;
 void samplv1_lv2::qapp_instantiate (void)
 {
 
-#ifndef CONFIG_LV2_MOD
+#ifndef CONFIG_LV2_NO_GUI
 	if (qApp == nullptr && g_qapp_instance == nullptr) {
 		static int s_argc = 1;
 		static const char *s_argv[] = { SAMPLV1_TITLE, nullptr };
@@ -569,7 +589,7 @@ void samplv1_lv2::qapp_instantiate (void)
 void samplv1_lv2::qapp_cleanup (void)
 {
 
-#ifndef CONFIG_LV2_MOD
+#ifndef CONFIG_LV2_NO_GUI
 	if (g_qapp_instance && --g_qapp_refcount == 0) {
 		delete g_qapp_instance;
 		g_qapp_instance = nullptr;
@@ -580,7 +600,7 @@ void samplv1_lv2::qapp_cleanup (void)
 
 QApplication *samplv1_lv2::qapp_instance (void)
 {
-#ifndef CONFIG_LV2_MOD
+#ifndef CONFIG_LV2_NO_GUI
 	return g_qapp_instance;
 #else
 	return nullptr;
@@ -812,6 +832,8 @@ static LV2_State_Status samplv1_lv2_state_restore ( LV2_Handle instance,
 
 	pPlugin->setSampleFile(sSampleFile.toUtf8().constData(), otabs);
 
+	pPlugin->sample_changed = true;
+
 	// Restore state properties...
 	uint32_t offset_start = 0;
 	uint32_t offset_end = 0;
@@ -963,7 +985,7 @@ static LV2_State_Status samplv1_lv2_state_restore ( LV2_Handle instance,
 
 	if (value != nullptr && size > 2 && type == chunk_type
 		&& (flags & (LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE))) {
-		
+
 		QDomDocument doc(SAMPLV1_TITLE);
 		if (doc.setContent(QByteArray(value, size))) {
 			QDomElement eState = doc.documentElement();
