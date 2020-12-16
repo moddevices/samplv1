@@ -98,7 +98,7 @@ samplv1_lv2::samplv1_lv2 (
 	m_schedule = nullptr;
 	m_ndelta   = 0;
 
-	sample_changed = false;
+	update_notify = false;
 
 	const LV2_Options_Option *host_options = nullptr;
 
@@ -197,7 +197,7 @@ samplv1_lv2::samplv1_lv2 (
 				m_urids.patch_property = m_urid_map->map(
 					m_urid_map->handle, LV2_PATCH__property);
 				m_urids.patch_value = m_urid_map->map(
- 					m_urid_map->handle, LV2_PATCH__value);
+					m_urid_map->handle, LV2_PATCH__value);
 			#endif
 			}
 		}
@@ -277,6 +277,63 @@ void samplv1_lv2::connect_port ( uint32_t port, void *data )
 	}
 }
 
+LV2_Atom_Forge_Ref samplv1_lv2::write_set_file(LV2_Atom_Forge*    forge,
+               const lv2_urids* uris,
+			   const LV2_URID   id,
+               const char*      filename,
+               const uint32_t   filename_len)
+{
+	LV2_Atom_Forge_Frame frame;
+	LV2_Atom_Forge_Ref   set = lv2_atom_forge_object(
+		forge, &frame, 0, uris->patch_Set);
+
+	lv2_atom_forge_key(forge, uris->patch_property);
+	lv2_atom_forge_urid(forge, id);
+	lv2_atom_forge_key(forge, uris->patch_value);
+	lv2_atom_forge_path(forge, filename, filename_len);
+
+	lv2_atom_forge_pop(forge, &frame);
+
+	return set;
+}
+
+LV2_Atom_Forge_Ref samplv1_lv2::write_set_bool(LV2_Atom_Forge* forge,
+               const lv2_urids* uris,
+			   const LV2_URID   id,
+               const float      value)
+{
+	LV2_Atom_Forge_Frame frame;
+	LV2_Atom_Forge_Ref   set = lv2_atom_forge_object(
+		forge, &frame, 0, uris->patch_Set);
+
+	lv2_atom_forge_key(forge, uris->patch_property);
+	lv2_atom_forge_urid(forge, id);
+	lv2_atom_forge_key(forge, uris->patch_value);
+	lv2_atom_forge_bool(forge, value);
+
+	lv2_atom_forge_pop(forge, &frame);
+
+	return set;
+}
+
+LV2_Atom_Forge_Ref samplv1_lv2::write_set_int(LV2_Atom_Forge* forge,
+               const lv2_urids* uris,
+			   const LV2_URID id,
+               const float value)
+{
+	LV2_Atom_Forge_Frame frame;
+	LV2_Atom_Forge_Ref   set = lv2_atom_forge_object(
+		forge, &frame, 0, uris->patch_Set);
+
+	lv2_atom_forge_key(forge, uris->patch_property);
+	lv2_atom_forge_urid(forge, id);
+	lv2_atom_forge_key(forge, uris->patch_value);
+	lv2_atom_forge_int(forge, value);
+
+	lv2_atom_forge_pop(forge, &frame);
+
+	return set;
+}
 
 void samplv1_lv2::run ( uint32_t nframes )
 {
@@ -294,21 +351,51 @@ void samplv1_lv2::run ( uint32_t nframes )
 	}
 
 	// Send update to UI if sample has changed due to state restore
-	if (sample_changed) {
+	if (update_notify) {
 		lv2_atom_forge_frame_time(&m_forge, 0);
-		LV2_Atom_Forge_Frame frame;
-		LV2_Atom* set = (LV2_Atom*)lv2_atom_forge_object(
-				&m_forge, &frame, 0, m_urids.patch_Set);
 
-		lv2_atom_forge_key(&m_forge, m_urids.patch_property);
-		lv2_atom_forge_urid(&m_forge, m_urids.p101_sample_file);
-		lv2_atom_forge_key(&m_forge, m_urids.patch_value);
-		lv2_atom_forge_path(&m_forge, samplv1::sampleFile(),
+		write_set_file(&m_forge,
+				&m_urids,
+				m_urids.p101_sample_file,
+				samplv1::sampleFile(),
 				strlen(samplv1::sampleFile()));
 
-		lv2_atom_forge_pop(&m_forge, &frame);
+		write_set_int(&m_forge,
+				&m_urids,
+				m_urids.p102_offset_start,
+				samplv1::offsetStart());
 
-		sample_changed = false;
+		write_set_int(&m_forge,
+				&m_urids,
+				m_urids.p103_offset_end,
+				samplv1::offsetEnd());
+
+		write_set_int(&m_forge,
+				&m_urids,
+				m_urids.p104_loop_start,
+				samplv1::loopStart());
+
+		write_set_int(&m_forge,
+				&m_urids,
+				m_urids.p105_loop_end,
+				samplv1::loopEnd());
+
+		write_set_int(&m_forge,
+				&m_urids,
+				m_urids.p106_loop_fade,
+				samplv1::loopFade());
+
+		write_set_bool(&m_forge,
+				&m_urids,
+				m_urids.p107_loop_zero,
+				samplv1::isLoopZero());
+
+		//write_set_int(&m_forge,
+		//		&m_urids,
+		//		m_urids.p108_sample_otabs,
+		//		samplv1::isLoopZero());
+
+		update_notify = false;
 	}
 
 	uint32_t ndelta = 0;
@@ -832,7 +919,6 @@ static LV2_State_Status samplv1_lv2_state_restore ( LV2_Handle instance,
 
 	pPlugin->setSampleFile(sSampleFile.toUtf8().constData(), otabs);
 
-	pPlugin->sample_changed = true;
 
 	// Restore state properties...
 	uint32_t offset_start = 0;
@@ -1006,6 +1092,8 @@ static LV2_State_Status samplv1_lv2_state_restore ( LV2_Handle instance,
 	pPlugin->reset();
 
 	samplv1_sched::sync_notify(pPlugin, samplv1_sched::Sample, 1);
+
+	pPlugin->update_notify = true;
 
 	return LV2_STATE_SUCCESS;
 }

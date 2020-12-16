@@ -92,7 +92,7 @@ public:
 
 	static QApplication *qapp_instance();
 
-	bool sample_changed;
+	bool update_notify;
 
 protected:
 
@@ -182,6 +182,20 @@ private:
 	LV2_Atom_Forge_Frame m_notify_frame;
 
 	LV2_Worker_Schedule *m_schedule;
+
+	LV2_Atom_Forge_Ref write_set_file(LV2_Atom_Forge*    forge,
+			const lv2_urids* uris,
+			const LV2_URID   id,
+			const char*      filename,
+			const uint32_t   filename_len);
+	LV2_Atom_Forge_Ref write_set_bool(LV2_Atom_Forge* forge,
+			const lv2_urids* uris,
+			const LV2_URID   id,
+			const float      value);
+	LV2_Atom_Forge_Ref write_set_int(LV2_Atom_Forge* forge,
+			const lv2_urids* uris,
+			const LV2_URID id,
+			const float value);
 
 	uint32_t m_ndelta;
 
