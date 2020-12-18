@@ -350,53 +350,6 @@ void samplv1_lv2::run ( uint32_t nframes )
 		lv2_atom_forge_sequence_head(&m_forge, &m_notify_frame, 0);
 	}
 
-	// Send update to UI if sample has changed due to state restore
-	if (update_notify) {
-		lv2_atom_forge_frame_time(&m_forge, 0);
-
-		write_set_file(&m_forge,
-				&m_urids,
-				m_urids.p101_sample_file,
-				samplv1::sampleFile(),
-				strlen(samplv1::sampleFile()));
-
-		write_set_int(&m_forge,
-				&m_urids,
-				m_urids.p102_offset_start,
-				samplv1::offsetStart());
-
-		write_set_int(&m_forge,
-				&m_urids,
-				m_urids.p103_offset_end,
-				samplv1::offsetEnd());
-
-		write_set_int(&m_forge,
-				&m_urids,
-				m_urids.p104_loop_start,
-				samplv1::loopStart());
-
-		write_set_int(&m_forge,
-				&m_urids,
-				m_urids.p105_loop_end,
-				samplv1::loopEnd());
-
-		write_set_int(&m_forge,
-				&m_urids,
-				m_urids.p106_loop_fade,
-				samplv1::loopFade());
-
-		write_set_bool(&m_forge,
-				&m_urids,
-				m_urids.p107_loop_zero,
-				samplv1::isLoopZero());
-
-		//write_set_int(&m_forge,
-		//		&m_urids,
-		//		m_urids.p108_sample_otabs,
-		//		samplv1::isLoopZero());
-
-		update_notify = false;
-	}
 
 	uint32_t ndelta = 0;
 
@@ -626,6 +579,54 @@ void samplv1_lv2::run ( uint32_t nframes )
 
 	// test for sample offset/loop changes
 	samplv1::sampleOffsetLoopTest();
+
+	// Send update to UI if sample has changed due to state restore
+	if (update_notify && m_atom_out) {
+		lv2_atom_forge_frame_time(&m_forge, 0);
+
+		write_set_file(&m_forge,
+				&m_urids,
+				m_urids.p101_sample_file,
+				samplv1::sampleFile(),
+				strlen(samplv1::sampleFile()));
+
+		write_set_int(&m_forge,
+				&m_urids,
+				m_urids.p102_offset_start,
+				samplv1::offsetStart());
+
+		write_set_int(&m_forge,
+				&m_urids,
+				m_urids.p103_offset_end,
+				samplv1::offsetEnd());
+
+		write_set_int(&m_forge,
+				&m_urids,
+				m_urids.p104_loop_start,
+				samplv1::loopStart());
+
+		write_set_int(&m_forge,
+				&m_urids,
+				m_urids.p105_loop_end,
+				samplv1::loopEnd());
+
+		write_set_int(&m_forge,
+				&m_urids,
+				m_urids.p106_loop_fade,
+				samplv1::loopFade());
+
+		write_set_bool(&m_forge,
+				&m_urids,
+				m_urids.p107_loop_zero,
+				samplv1::isLoopZero());
+
+		//write_set_int(&m_forge,
+		//		&m_urids,
+		//		m_urids.p108_sample_otabs,
+		//		samplv1::isLoopZero());
+
+		update_notify = false;
+	}
 }
 
 
