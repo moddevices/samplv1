@@ -300,11 +300,11 @@ LV2_Atom_Forge_Ref samplv1_lv2::write_set_file(LV2_Atom_Forge*    forge,
 LV2_Atom_Forge_Ref samplv1_lv2::write_set_bool(LV2_Atom_Forge* forge,
                const lv2_urids* uris,
 			   const LV2_URID   id,
-               const float      value)
+               const bool       value)
 {
 	LV2_Atom_Forge_Frame frame;
 	LV2_Atom_Forge_Ref   set = lv2_atom_forge_object(
-		forge, &frame, 0, uris->patch_Set);
+			forge, &frame, 0, uris->patch_Set);
 
 	lv2_atom_forge_key(forge, uris->patch_property);
 	lv2_atom_forge_urid(forge, id);
@@ -319,11 +319,11 @@ LV2_Atom_Forge_Ref samplv1_lv2::write_set_bool(LV2_Atom_Forge* forge,
 LV2_Atom_Forge_Ref samplv1_lv2::write_set_int(LV2_Atom_Forge* forge,
                const lv2_urids* uris,
 			   const LV2_URID id,
-               const float value)
+               const int value)
 {
 	LV2_Atom_Forge_Frame frame;
 	LV2_Atom_Forge_Ref   set = lv2_atom_forge_object(
-		forge, &frame, 0, uris->patch_Set);
+			forge, &frame, 0, uris->patch_Set);
 
 	lv2_atom_forge_key(forge, uris->patch_property);
 	lv2_atom_forge_urid(forge, id);

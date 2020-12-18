@@ -191,11 +191,11 @@ private:
 	LV2_Atom_Forge_Ref write_set_bool(LV2_Atom_Forge* forge,
 			const lv2_urids* uris,
 			const LV2_URID   id,
-			const float      value);
+			const bool       value);
 	LV2_Atom_Forge_Ref write_set_int(LV2_Atom_Forge* forge,
 			const lv2_urids* uris,
-			const LV2_URID id,
-			const float value);
+			const LV2_URID   id,
+			const int        value);
 
 	uint32_t m_ndelta;
 
