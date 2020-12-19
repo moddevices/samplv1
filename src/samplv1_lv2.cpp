@@ -40,7 +40,6 @@
 #include "lv2/lv2plug.in/ns/ext/patch/patch.h"
 #endif
 
-
 #ifndef CONFIG_LV2_ATOM_FORGE_OBJECT
 #define lv2_atom_forge_object(forge, frame, id, otype) \
 		lv2_atom_forge_blank(forge, frame, id, otype)
@@ -230,7 +229,7 @@ samplv1_lv2::samplv1_lv2 (
 				buffer_size = block_length;
 		}
  	}
-
+ 
 	samplv1::setBufferSize(buffer_size);
 
 	lv2_atom_forge_init(&m_forge, m_urid_map);
@@ -278,10 +277,10 @@ void samplv1_lv2::connect_port ( uint32_t port, void *data )
 }
 
 LV2_Atom_Forge_Ref samplv1_lv2::write_set_file(LV2_Atom_Forge*    forge,
-               const lv2_urids* uris,
-			   const LV2_URID   id,
-               const char*      filename,
-               const uint32_t   filename_len)
+                                               const lv2_urids* uris,
+                                               const LV2_URID   id,
+                                               const char*      filename,
+                                               const uint32_t   filename_len)
 {
 	LV2_Atom_Forge_Frame frame;
 	LV2_Atom_Forge_Ref   set = lv2_atom_forge_object(
@@ -298,13 +297,13 @@ LV2_Atom_Forge_Ref samplv1_lv2::write_set_file(LV2_Atom_Forge*    forge,
 }
 
 LV2_Atom_Forge_Ref samplv1_lv2::write_set_bool(LV2_Atom_Forge* forge,
-               const lv2_urids* uris,
-			   const LV2_URID   id,
-               const bool       value)
+                                               const lv2_urids* uris,
+                                               const LV2_URID   id,
+                                               const bool      value)
 {
 	LV2_Atom_Forge_Frame frame;
 	LV2_Atom_Forge_Ref   set = lv2_atom_forge_object(
-			forge, &frame, 0, uris->patch_Set);
+		forge, &frame, 0, uris->patch_Set);
 
 	lv2_atom_forge_key(forge, uris->patch_property);
 	lv2_atom_forge_urid(forge, id);
@@ -317,13 +316,13 @@ LV2_Atom_Forge_Ref samplv1_lv2::write_set_bool(LV2_Atom_Forge* forge,
 }
 
 LV2_Atom_Forge_Ref samplv1_lv2::write_set_int(LV2_Atom_Forge* forge,
-               const lv2_urids* uris,
-			   const LV2_URID id,
-               const int value)
+                                              const lv2_urids* uris,
+                                              const LV2_URID id,
+                                              const int value)
 {
 	LV2_Atom_Forge_Frame frame;
 	LV2_Atom_Forge_Ref   set = lv2_atom_forge_object(
-			forge, &frame, 0, uris->patch_Set);
+		forge, &frame, 0, uris->patch_Set);
 
 	lv2_atom_forge_key(forge, uris->patch_property);
 	lv2_atom_forge_urid(forge, id);
@@ -349,7 +348,6 @@ void samplv1_lv2::run ( uint32_t nframes )
 		lv2_atom_forge_set_buffer(&m_forge, (uint8_t *) m_atom_out, capacity);
 		lv2_atom_forge_sequence_head(&m_forge, &m_notify_frame, 0);
 	}
-
 
 	uint32_t ndelta = 0;
 
@@ -581,52 +579,12 @@ void samplv1_lv2::run ( uint32_t nframes )
 	samplv1::sampleOffsetLoopTest();
 
 	// Send update to UI if sample has changed due to state restore
-	if (update_notify && m_atom_out) {
-		lv2_atom_forge_frame_time(&m_forge, 0);
-
-		write_set_file(&m_forge,
-				&m_urids,
-				m_urids.p101_sample_file,
-				samplv1::sampleFile(),
-				strlen(samplv1::sampleFile()));
-
-		write_set_int(&m_forge,
-				&m_urids,
-				m_urids.p102_offset_start,
-				samplv1::offsetStart());
-
-		write_set_int(&m_forge,
-				&m_urids,
-				m_urids.p103_offset_end,
-				samplv1::offsetEnd());
-
-		write_set_int(&m_forge,
-				&m_urids,
-				m_urids.p104_loop_start,
-				samplv1::loopStart());
-
-		write_set_int(&m_forge,
-				&m_urids,
-				m_urids.p105_loop_end,
-				samplv1::loopEnd());
-
-		write_set_int(&m_forge,
-				&m_urids,
-				m_urids.p106_loop_fade,
-				samplv1::loopFade());
-
-		write_set_bool(&m_forge,
-				&m_urids,
-				m_urids.p107_loop_zero,
-				samplv1::isLoopZero());
-
-		//write_set_int(&m_forge,
-		//		&m_urids,
-		//		m_urids.p108_sample_otabs,
-		//		samplv1::isLoopZero());
-
+	if (update_notify) {
+		patch_get(0);
 		update_notify = false;
+		return;
 	}
+
 }
 
 
@@ -660,7 +618,6 @@ unsigned int  samplv1_lv2::g_qapp_refcount = 0;
 
 void samplv1_lv2::qapp_instantiate (void)
 {
-
 #ifndef CONFIG_LV2_NO_GUI
 	if (qApp == nullptr && g_qapp_instance == nullptr) {
 		static int s_argc = 1;
@@ -676,7 +633,6 @@ void samplv1_lv2::qapp_instantiate (void)
 
 void samplv1_lv2::qapp_cleanup (void)
 {
-
 #ifndef CONFIG_LV2_NO_GUI
 	if (g_qapp_instance && --g_qapp_refcount == 0) {
 		delete g_qapp_instance;
@@ -746,44 +702,43 @@ static LV2_State_Status samplv1_lv2_state_save ( LV2_Handle instance,
 		::free((void *) value);
 
 	// Save state properties...
-	size = sizeof(uint32_t);
+	size = sizeof(int32_t);
 	type = pPlugin->urid_map(LV2_ATOM__Int);
 	if (type) {
+		int32_t zero = 0;
+
 		// Sample octaves...
-		uint32_t otabs = pPlugin->octaves();
-		if (otabs > 0) {
-			value = (const char *) &otabs;
-			key = pPlugin->urid_map(SAMPLV1_LV2_PREFIX "P108_SAMPLE_OTABS");
-			if (key)
-				(*store)(handle, key, value, size, type, flags);
-		}
+		int32_t otabs = pPlugin->octaves();
+		value = (const char *) (otabs > 0 ? &otabs : &zero);
+		key = pPlugin->urid_map(SAMPLV1_LV2_PREFIX "P108_SAMPLE_OTABS");
+		if (key)
+			(*store)(handle, key, value, size, type, flags);
+
 		// Offset state...
-		uint32_t offset_start = pPlugin->offsetStart();
-		uint32_t offset_end   = pPlugin->offsetEnd();
-		if (offset_start < offset_end) {
-			value = (const char *) &offset_start;
-			key = pPlugin->urid_map(SAMPLV1_LV2_PREFIX "P102_OFFSET_START");
-			if (key)
-				(*store)(handle, key, value, size, type, flags);
-			value = (const char *) &offset_end;
-			key = pPlugin->urid_map(SAMPLV1_LV2_PREFIX "P103_OFFSET_END");
-			if (key)
-				(*store)(handle, key, value, size, type, flags);
-		}
+		int32_t offset_start = pPlugin->offsetStart();
+		int32_t offset_end   = pPlugin->offsetEnd();
+		value = (const char *) ((offset_start < offset_end) ? &offset_start : &zero);
+		key = pPlugin->urid_map(SAMPLV1_LV2_PREFIX "P102_OFFSET_START");
+		if (key)
+			(*store)(handle, key, value, size, type, flags);
+		value = (const char *) ((offset_start < offset_end) ? &offset_end : &zero);
+		key = pPlugin->urid_map(SAMPLV1_LV2_PREFIX "P103_OFFSET_END");
+		if (key)
+			(*store)(handle, key, value, size, type, flags);
+
 		// Loop state...
-		uint32_t loop_start = pPlugin->loopStart();
-		uint32_t loop_end   = pPlugin->loopEnd();
-		if (loop_start < loop_end) {
-			value = (const char *) &loop_start;
-			key = pPlugin->urid_map(SAMPLV1_LV2_PREFIX "P104_LOOP_START");
-			if (key)
-				(*store)(handle, key, value, size, type, flags);
-			value = (const char *) &loop_end;
-			key = pPlugin->urid_map(SAMPLV1_LV2_PREFIX "P105_LOOP_END");
-			if (key)
-				(*store)(handle, key, value, size, type, flags);
-		}
-		uint32_t loop_fade = pPlugin->loopFade();
+		int32_t loop_start = pPlugin->loopStart();
+		int32_t loop_end   = pPlugin->loopEnd();
+		value = (const char *) (loop_start < loop_end ? &loop_start : &zero);
+		key = pPlugin->urid_map(SAMPLV1_LV2_PREFIX "P104_LOOP_START");
+		if (key)
+			(*store)(handle, key, value, size, type, flags);
+		value = (const char *) (loop_start < loop_end ? &loop_end : &zero);
+		key = pPlugin->urid_map(SAMPLV1_LV2_PREFIX "P105_LOOP_END");
+		if (key)
+			(*store)(handle, key, value, size, type, flags);
+
+		int32_t loop_fade = pPlugin->loopFade();
 		value = (const char *) &loop_fade;
 		key = pPlugin->urid_map(SAMPLV1_LV2_PREFIX "P106_LOOP_FADE");
 		if (key)
@@ -792,7 +747,7 @@ static LV2_State_Status samplv1_lv2_state_save ( LV2_Handle instance,
 
 	type = pPlugin->urid_map(LV2_ATOM__Bool);
 	if (type) {
-		uint32_t loop_zero = pPlugin->isLoopZero() ? 1 : 0;
+		int32_t loop_zero = pPlugin->isLoopZero() ? 1 : 0;
 		value = (const char *) &loop_zero;
 		key = pPlugin->urid_map(SAMPLV1_LV2_PREFIX "P107_LOOP_ZERO");
 		if (key)
@@ -905,7 +860,7 @@ static LV2_State_Status samplv1_lv2_state_restore ( LV2_Handle instance,
 		::free((void *) value);
 
 	// open sample file, right away...
-	uint32_t otabs = 0;
+	int32_t otabs = 0;
 	const uint32_t int_type = pPlugin->urid_map(LV2_ATOM__Int);
 	if (int_type) {
 		key = pPlugin->urid_map(SAMPLV1_LV2_PREFIX "P108_SAMPLE_OTABS");
@@ -913,21 +868,20 @@ static LV2_State_Status samplv1_lv2_state_restore ( LV2_Handle instance,
 			size = 0;
 			type = 0;
 			value = (const char *) (*retrieve)(handle, key, &size, &type, &flags);
-			if (value && size == sizeof(uint32_t) && type == int_type)
-				otabs = *(uint32_t *) value;
+			if (value && size == sizeof(int32_t) && type == int_type)
+				otabs = *(int32_t *) value;
 		}
 	}
 
 	pPlugin->setSampleFile(sSampleFile.toUtf8().constData(), otabs);
 
-
 	// Restore state properties...
-	uint32_t offset_start = 0;
-	uint32_t offset_end = 0;
-	uint32_t loop_start = 0;
-	uint32_t loop_end   = 0;
-	uint32_t loop_fade  = 0;
-	uint32_t loop_zero  = 1; // default: true.
+	int32_t offset_start = 0;
+	int32_t offset_end = 0;
+	int32_t loop_start = 0;
+	int32_t loop_end   = 0;
+	int32_t loop_fade  = 0;
+	int32_t loop_zero  = 1; // default: true.
 
 	if (int_type) {
 		key = pPlugin->urid_map(SAMPLV1_LV2_PREFIX "P102_OFFSET_START");
@@ -945,8 +899,8 @@ static LV2_State_Status samplv1_lv2_state_restore ( LV2_Handle instance,
 				}
 			}
 		#endif
-			if (value && size == sizeof(uint32_t) && type == int_type)
-				offset_start = *(uint32_t *) value;
+			if (value && size == sizeof(int32_t) && type == int_type)
+				offset_start = *(int32_t *) value;
 		}
 		key = pPlugin->urid_map(SAMPLV1_LV2_PREFIX "P103_OFFSET_END");
 		if (key) {
@@ -963,8 +917,8 @@ static LV2_State_Status samplv1_lv2_state_restore ( LV2_Handle instance,
 				}
 			}
 		#endif
-			if (value && size == sizeof(uint32_t) && type == int_type)
-				offset_end = *(uint32_t *) value;
+			if (value && size == sizeof(int32_t) && type == int_type)
+				offset_end = *(int32_t *) value;
 		}
 		key = pPlugin->urid_map(SAMPLV1_LV2_PREFIX "P104_LOOP_START");
 		if (key) {
@@ -981,8 +935,8 @@ static LV2_State_Status samplv1_lv2_state_restore ( LV2_Handle instance,
 				}
 			}
 		#endif
-			if (value && size == sizeof(uint32_t) && type == int_type)
-				loop_start = *(uint32_t *) value;
+			if (value && size == sizeof(int32_t) && type == int_type)
+				loop_start = *(int32_t *) value;
 		}
 		key = pPlugin->urid_map(SAMPLV1_LV2_PREFIX "P105_LOOP_END");
 		if (key) {
@@ -999,8 +953,8 @@ static LV2_State_Status samplv1_lv2_state_restore ( LV2_Handle instance,
 				}
 			}
 		#endif
-			if (value && size == sizeof(uint32_t) && type == int_type)
-				loop_end = *(uint32_t *) value;
+			if (value && size == sizeof(int32_t) && type == int_type)
+				loop_end = *(int32_t *) value;
 		}
 		key = pPlugin->urid_map(SAMPLV1_LV2_PREFIX "P106_LOOP_FADE");
 		if (key) {
@@ -1017,8 +971,8 @@ static LV2_State_Status samplv1_lv2_state_restore ( LV2_Handle instance,
 				}
 			}
 		#endif
-			if (value && size == sizeof(uint32_t) && type == int_type)
-				loop_fade = *(uint32_t *) value;
+			if (value && size == sizeof(int32_t) && type == int_type)
+				loop_fade = *(int32_t *) value;
 		}
 	}
 
@@ -1039,9 +993,9 @@ static LV2_State_Status samplv1_lv2_state_restore ( LV2_Handle instance,
 				}
 			}
 		#endif
-			if (value && size == sizeof(uint32_t)
+			if (value && size == sizeof(int32_t)
 				&& (type == int_type || type == bool_type))
-				loop_zero = *(uint32_t *) value;
+				loop_zero = *(int32_t *) value;
 		}
 	}
 
