@@ -34,7 +34,7 @@
 samplv1_sample::samplv1_sample ( float srate )
 	: m_srate(srate), m_ntabs(0), m_filename(nullptr),
 		m_nchannels(0), m_rate0(0.0f), m_freq0(1.0f), m_ratio(0.0f),
-		m_nframes(0), m_pframes(nullptr), m_reverse(false),
+		m_nframes(0), m_pframes(nullptr), m_reverse(false), m_sample_loaded(false),
 		m_offset(false), m_offset_start(0), m_offset_end(0),
 		m_offset_phase0(nullptr), m_offset_end2(0),
 		m_loop(false), m_loop_start(0), m_loop_end(0),
@@ -54,6 +54,8 @@ samplv1_sample::~samplv1_sample (void)
 // init.
 bool samplv1_sample::open ( const char *filename, float freq0, uint16_t otabs )
 {
+	m_sample_loaded = false;
+
 	if (filename == nullptr)
 		return false;
 
@@ -84,13 +86,16 @@ bool samplv1_sample::open ( const char *filename, float freq0, uint16_t otabs )
 
 	float *buffer = new float [m_nchannels * m_nframes];
 
-	const int nread = ::sf_readf_float(file, buffer, m_nframes);
+	const int nread = ::sf_read_float(file, buffer, m_nchannels * m_nframes);
+	::sf_close(file);
+
 	if (nread > 0) {
 		// resample start...
 		const uint32_t ninp = uint32_t(nread);
 		const uint32_t rinp = uint32_t(m_rate0);
 		const uint32_t rout = uint32_t(m_srate);
 		if (rinp != rout) {
+
 			samplv1_resampler resampler;
 			const uint32_t nout = uint32_t(float(ninp) * m_srate / m_rate0);
 			const uint32_t FILTSIZE = 32; // resample medium quality
@@ -131,16 +136,20 @@ bool samplv1_sample::open ( const char *filename, float freq0, uint16_t otabs )
 		pshifter = samplv1_pshifter::create(m_nchannels, m_srate);
 
 	for (uint16_t itab = 0; itab < ntabs; ++itab) {
+
 		float **pframes = new float * [m_nchannels];
 		for (uint16_t k = 0; k < m_nchannels; ++k) {
 			pframes[k] = new float [nsize];
 			::memset(pframes[k], 0, nsize * sizeof(float));
 		}
+
 		uint32_t i = 0;
-		for (uint32_t j = 0; j < m_nframes; ++j) {
-			for (uint16_t k = 0; k < m_nchannels; ++k)
+		for (uint32_t j = 0; j < m_nframes/m_nchannels; ++j) {
+			for (uint16_t k = 0; k < m_nchannels; ++k) {
 				pframes[k][j] = buffer[i++];
+			}
 		}
+
 		const uint16_t itab0 = (m_ntabs >> 1);
 		if (itab != itab0 && pshifter) {
 			const float pshift = 1.0f / ftab(itab);
@@ -152,11 +161,12 @@ bool samplv1_sample::open ( const char *filename, float freq0, uint16_t otabs )
 		m_loop_phase2[itab] = 0.0f;
 	}
 
+
 	if (pshifter)
 		samplv1_pshifter::destroy(pshifter);
 
 	delete [] buffer;
-	::sf_close(file);
+	//::sf_close(file);
 
 	if (m_reverse)
 		reverse_sync();
@@ -165,6 +175,9 @@ bool samplv1_sample::open ( const char *filename, float freq0, uint16_t otabs )
 
 	updateOffset();
 	updateLoop();
+
+	m_sample_loaded = true;
+
 	return true;
 }
 

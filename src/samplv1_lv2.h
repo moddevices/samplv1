@@ -41,6 +41,8 @@
 #include <QByteArray>
 #endif
 
+#define x_forge_object lv2_atom_forge_object
+
 //#ifndef CONFIG_LV2_NO_GUI
 // Forward decls.
 class QApplication;
@@ -146,6 +148,7 @@ private:
 		LV2_URID p106_loop_fade;
 		LV2_URID p107_loop_zero;
 		LV2_URID p108_sample_otabs;
+		LV2_URID p109_wave_form_data;
 		LV2_URID gen1_update;
 		LV2_URID p201_tuning_enabled;
 		LV2_URID p202_tuning_refPitch;
@@ -196,6 +199,12 @@ private:
 			const lv2_urids* uris,
 			const LV2_URID   id,
 			const int        value);
+
+	void tx_to_gui (LV2_Atom_Forge* forge,
+                        const lv2_urids* uris,
+                        const LV2_URID id,
+						const float* bins,
+						int32_t n_bins);
 
 	uint32_t m_ndelta;
 

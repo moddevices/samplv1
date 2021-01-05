@@ -138,6 +138,8 @@ samplv1_lv2::samplv1_lv2 (
 					m_urid_map->handle, SAMPLV1_LV2_PREFIX "P107_LOOP_ZERO");
 				m_urids.p108_sample_otabs = m_urid_map->map(
 					m_urid_map->handle, SAMPLV1_LV2_PREFIX "P108_SAMPLE_OTABS");
+				m_urids.p109_wave_form_data = m_urid_map->map(
+					m_urid_map->handle, SAMPLV1_LV2_PREFIX "P109_WAVE_FORM");
 				m_urids.gen1_update = m_urid_map->map(
 					m_urid_map->handle, SAMPLV1_LV2_PREFIX "GEN1_UPDATE");
 				m_urids.p201_tuning_enabled = m_urid_map->map(
@@ -315,7 +317,8 @@ LV2_Atom_Forge_Ref samplv1_lv2::write_set_bool(LV2_Atom_Forge* forge,
 	return set;
 }
 
-LV2_Atom_Forge_Ref samplv1_lv2::write_set_int(LV2_Atom_Forge* forge,
+LV2_Atom_Forge_Ref samplv1_lv2::write_set_int
+(LV2_Atom_Forge* forge,
                                               const lv2_urids* uris,
                                               const LV2_URID id,
                                               const int value)
@@ -334,6 +337,26 @@ LV2_Atom_Forge_Ref samplv1_lv2::write_set_int(LV2_Atom_Forge* forge,
 	return set;
 }
 
+void samplv1_lv2::tx_to_gui (LV2_Atom_Forge* forge,
+                        const lv2_urids* uris,
+                        const LV2_URID id,
+						const float* bins,
+						int32_t n_bins)
+{
+	LV2_Atom_Forge_Frame frame;
+	lv2_atom_forge_frame_time (forge, 0);
+
+	/* add vector of floats raw 'bin_data' */
+	x_forge_object (forge, &frame, 0, uris->patch_Set);
+
+	lv2_atom_forge_key (forge, uris->patch_property);
+	lv2_atom_forge_urid (forge, id);
+	lv2_atom_forge_key (forge, uris->patch_value);
+	lv2_atom_forge_vector (forge, sizeof (float), uris->atom_Float, n_bins, bins);
+
+	lv2_atom_forge_pop (forge, &frame);
+}
+
 void samplv1_lv2::run ( uint32_t nframes )
 {
 	const uint16_t nchannels = samplv1::channels();
@@ -344,9 +367,34 @@ void samplv1_lv2::run ( uint32_t nframes )
 	}
 
 	if (m_atom_out) {
+
 		const uint32_t capacity = m_atom_out->atom.size;
 		lv2_atom_forge_set_buffer(&m_forge, (uint8_t *) m_atom_out, capacity);
 		lv2_atom_forge_sequence_head(&m_forge, &m_notify_frame, 0);
+
+		//samplv1_sample *pSample = samplv1::sample();
+		//int sample_length = pSample->length();
+
+		//if (sample_length > 0) {
+
+		//	const float *pFrames = pSample->frames(0, 0);
+
+		//	const int DATA_SIZE = 256;
+		//	float wave_form_out[DATA_SIZE];
+		//	bool changed = false;
+		//	for (uint32_t s = 0; s < DATA_SIZE; s++) {
+		//		//const float frame = *pFrames++;
+		//		//wave_form_out[s] = frame;
+		//		wave_form_out[s] = 0.5;
+		//		changed = true;
+		//	}
+		//	if (changed) {
+
+		//		tx_to_gui (&m_forge, &m_urids, m_urids.p109_wave_form_data, wave_form_out, DATA_SIZE);
+		//	}
+		//	/* close off atom-sequence */
+		//	lv2_atom_forge_pop (&m_forge, &m_notify_frame);
+		//}
 	}
 
 	uint32_t ndelta = 0;
@@ -585,6 +633,33 @@ void samplv1_lv2::run ( uint32_t nframes )
 		return;
 	}
 
+
+	if (m_atom_out) {
+
+		samplv1_sample *pSample = samplv1::sample();
+		int sample_length = pSample->length();
+
+		if ((sample_length > 0) && (pSample->sampleLoaded())) {
+
+			const float *pFrames = pSample->frames(0, 0);
+
+			const int DATA_SIZE = 256;
+			float wave_form_out[DATA_SIZE];
+			bool changed = false;
+			for (uint32_t s = 0; s < DATA_SIZE; s++) {
+				int sample_index = (int)((pSample->length() / DATA_SIZE) * s);
+				const float frame = pFrames[sample_index];
+				wave_form_out[s] = 0.5 + frame;
+				changed = true;
+			}
+			if (changed) {
+
+				tx_to_gui (&m_forge, &m_urids, m_urids.p109_wave_form_data, wave_form_out, DATA_SIZE);
+			}
+			/* close off atom-sequence */
+			lv2_atom_forge_pop (&m_forge, &m_notify_frame);
+		}
+	}
 }
 
 

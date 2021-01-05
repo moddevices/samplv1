@@ -184,13 +184,18 @@ public:
 
 	// frame value.
 	float *frames(uint16_t itab, uint16_t k) const
-		{ return m_pframes[itab][k]; }
+		{
+			return m_pframes[itab][k];
+		}
 	float *frames(uint16_t k) const
 		{ return frames(m_ntabs >> 1, k); }
 
 	// predicate.
 	bool isOver(uint32_t index) const
 		{ return !m_pframes || (index >= m_offset_end2); }
+
+	bool sampleLoaded() const
+	    { return m_sample_loaded; }
 
 protected:
 
@@ -229,6 +234,7 @@ private:
 	float ***m_pframes;
 	bool     m_reverse;
 
+	bool     m_sample_loaded;
 	bool     m_offset;
 	uint32_t m_offset_start;
 	uint32_t m_offset_end;
