@@ -231,7 +231,7 @@ samplv1_lv2::samplv1_lv2 (
 				buffer_size = block_length;
 		}
  	}
- 
+
 	samplv1::setBufferSize(buffer_size);
 
 	lv2_atom_forge_init(&m_forge, m_urid_map);
@@ -337,24 +337,24 @@ LV2_Atom_Forge_Ref samplv1_lv2::write_set_int
 	return set;
 }
 
-void samplv1_lv2::tx_to_gui (LV2_Atom_Forge* forge,
+void samplv1_lv2::tx_to_gui(LV2_Atom_Forge* forge,
                         const lv2_urids* uris,
                         const LV2_URID id,
-						const float* bins,
-						int32_t n_bins)
+						const float* sampleframes,
+						int32_t n_frames)
 {
 	LV2_Atom_Forge_Frame frame;
 	lv2_atom_forge_frame_time (forge, 0);
 
 	/* add vector of floats raw 'bin_data' */
-	x_forge_object (forge, &frame, 0, uris->patch_Set);
+	x_forge_object(forge, &frame, 0, uris->patch_Set);
 
-	lv2_atom_forge_key (forge, uris->patch_property);
-	lv2_atom_forge_urid (forge, id);
-	lv2_atom_forge_key (forge, uris->patch_value);
-	lv2_atom_forge_vector (forge, sizeof (float), uris->atom_Float, n_bins, bins);
+	lv2_atom_forge_key(forge, uris->patch_property);
+	lv2_atom_forge_urid(forge, id);
+	lv2_atom_forge_key(forge, uris->patch_value);
+	lv2_atom_forge_vector(forge, sizeof (float), uris->atom_Float, n_frames, sampleframes);
 
-	lv2_atom_forge_pop (forge, &frame);
+	lv2_atom_forge_pop(forge, &frame);
 }
 
 void samplv1_lv2::run ( uint32_t nframes )
@@ -642,8 +642,9 @@ void samplv1_lv2::run ( uint32_t nframes )
 		if ((sample_length > 0) && (pSample->sampleLoaded())) {
 
 			const float *pFrames = pSample->frames(0, 0);
+			const uint16_t channels = pSample->channels();
 
-			const int DATA_SIZE = 256;
+            const int DATA_SIZE = (channels >= 2) ? 512 : 256;
 			float wave_form_out[DATA_SIZE];
 			bool changed = false;
 			for (uint32_t s = 0; s < DATA_SIZE; s++) {
@@ -653,8 +654,7 @@ void samplv1_lv2::run ( uint32_t nframes )
 				changed = true;
 			}
 			if (changed) {
-
-				tx_to_gui (&m_forge, &m_urids, m_urids.p109_wave_form_data, wave_form_out, DATA_SIZE);
+				tx_to_gui(&m_forge, &m_urids, m_urids.p109_wave_form_data, wave_form_out, DATA_SIZE);
 			}
 			/* close off atom-sequence */
 			lv2_atom_forge_pop (&m_forge, &m_notify_frame);
