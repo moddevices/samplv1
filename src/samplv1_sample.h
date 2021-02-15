@@ -88,6 +88,13 @@ public:
 	float offsetPhase0(uint16_t itab) const
 		{ return (m_offset && m_offset_phase0 ? m_offset_phase0[itab] : 0.0f); }
 
+#ifdef CONFIG_LV2_NO_GUI
+	void setSampleChanged(bool state)
+	{
+		m_sample_changed = state;
+	}
+#endif
+
 	// loop mode.
 	void setLoop(bool loop)
 	{
@@ -194,8 +201,12 @@ public:
 	bool isOver(uint32_t index) const
 		{ return !m_pframes || (index >= m_offset_end2); }
 
+#ifndef CONFIG_LV2_NO_GUI
 	bool sampleLoaded() const
 	    { return m_sample_loaded; }
+	bool sampleChanged()
+		{ return m_sample_changed; }
+#endif
 
 protected:
 
@@ -234,7 +245,10 @@ private:
 	float ***m_pframes;
 	bool     m_reverse;
 
+#ifndef CONFIG_LV2_NO_GUI
+	bool     m_sample_changed;
 	bool     m_sample_loaded;
+#endif
 	bool     m_offset;
 	uint32_t m_offset_start;
 	uint32_t m_offset_end;

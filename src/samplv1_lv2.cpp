@@ -99,6 +99,10 @@ samplv1_lv2::samplv1_lv2 (
 
 	update_notify = false;
 
+#ifndef CONFIG_LV2_NO_GUI
+	sampleChanged = false;
+#endif
+
 	const LV2_Options_Option *host_options = nullptr;
 
 	for (int i = 0; host_features && host_features[i]; ++i) {
@@ -371,30 +375,6 @@ void samplv1_lv2::run ( uint32_t nframes )
 		const uint32_t capacity = m_atom_out->atom.size;
 		lv2_atom_forge_set_buffer(&m_forge, (uint8_t *) m_atom_out, capacity);
 		lv2_atom_forge_sequence_head(&m_forge, &m_notify_frame, 0);
-
-		//samplv1_sample *pSample = samplv1::sample();
-		//int sample_length = pSample->length();
-
-		//if (sample_length > 0) {
-
-		//	const float *pFrames = pSample->frames(0, 0);
-
-		//	const int DATA_SIZE = 256;
-		//	float wave_form_out[DATA_SIZE];
-		//	bool changed = false;
-		//	for (uint32_t s = 0; s < DATA_SIZE; s++) {
-		//		//const float frame = *pFrames++;
-		//		//wave_form_out[s] = frame;
-		//		wave_form_out[s] = 0.5;
-		//		changed = true;
-		//	}
-		//	if (changed) {
-
-		//		tx_to_gui (&m_forge, &m_urids, m_urids.p109_wave_form_data, wave_form_out, DATA_SIZE);
-		//	}
-		//	/* close off atom-sequence */
-		//	lv2_atom_forge_pop (&m_forge, &m_notify_frame);
-		//}
 	}
 
 	uint32_t ndelta = 0;
@@ -637,9 +617,9 @@ void samplv1_lv2::run ( uint32_t nframes )
 	if (m_atom_out) {
 
 		samplv1_sample *pSample = samplv1::sample();
-		int sample_length = pSample->length();
+		int sampleLength = pSample->length();
 
-		if ((sample_length > 0) && (pSample->sampleLoaded())) {
+		if ((sampleLength > 0) && (pSample->sampleLoaded()) && pSample->sampleChaned()) {
 
 			const float *pFrames = pSample->frames(0, 0);
 			const uint16_t channels = pSample->channels();
@@ -651,11 +631,9 @@ void samplv1_lv2::run ( uint32_t nframes )
 				int sample_index = (int)((pSample->length() / DATA_SIZE) * s);
 				const float frame = pFrames[sample_index];
 				wave_form_out[s] = 0.5 + frame;
-				changed = true;
 			}
-			if (changed) {
-				tx_to_gui(&m_forge, &m_urids, m_urids.p109_wave_form_data, wave_form_out, DATA_SIZE);
-			}
+			tx_to_gui(&m_forge, &m_urids, m_urids.p109_wave_form_data, wave_form_out, DATA_SIZE);
+			pSample->setSampleChanged(false);
 			/* close off atom-sequence */
 			lv2_atom_forge_pop (&m_forge, &m_notify_frame);
 		}

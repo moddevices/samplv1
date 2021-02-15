@@ -35,7 +35,7 @@ samplv1_sample::samplv1_sample ( float srate )
 	: m_srate(srate), m_ntabs(0), m_filename(nullptr),
 		m_nchannels(0), m_rate0(0.0f), m_freq0(1.0f), m_ratio(0.0f),
 		m_nframes(0), m_pframes(nullptr), m_reverse(false), m_sample_loaded(false),
-		m_offset(false), m_offset_start(0), m_offset_end(0),
+		m_sample_changed(false), m_offset(false), m_offset_start(0), m_offset_end(0),
 		m_offset_phase0(nullptr), m_offset_end2(0),
 		m_loop(false), m_loop_start(0), m_loop_end(0),
 		m_loop_phase1(nullptr), m_loop_phase2(nullptr),
@@ -176,7 +176,10 @@ bool samplv1_sample::open ( const char *filename, float freq0, uint16_t otabs )
 	updateOffset();
 	updateLoop();
 
+#ifndef CONFIG_LV2_NO_GUI
 	m_sample_loaded = true;
+	m_sample_changed = true;
+#endif
 
 	return true;
 }

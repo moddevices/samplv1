@@ -222,6 +222,7 @@ private:
 #ifndef CONFIG_LV2_NO_GUI
 	static QApplication *g_qapp_instance;
 	static unsigned int  g_qapp_refcount;
+	bool sampleChanged;
 #endif
 };
 
