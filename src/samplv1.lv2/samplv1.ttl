@@ -14,6 +14,7 @@
 @prefix lv2worker: <http://lv2plug.in/ns/ext/worker#> .
 @prefix lv2resize: <http://lv2plug.in/ns/ext/resize-port#> .
 @prefix lv2pg:   <http://lv2plug.in/ns/ext/port-groups#> .
+@prefix units: <http://lv2plug.in/ns/extensions/units#> .
 
 @prefix samplv1_lv2: <http://samplv1.sourceforge.net/lv2#> .
 
@@ -868,7 +869,8 @@ samplv1_lv2:P102_OFFSET_START
 	rdfs:range lv2atom:Int ;
 	lv2:default 0 ;
 	lv2:minimum 0 ;
-	lv2:maximum 2147483647 .
+	lv2:maximum 2147483647 ;
+	units:unit units:pc .
 
 samplv1_lv2:P103_OFFSET_END
 	a lv2:Parameter ;
@@ -877,6 +879,7 @@ samplv1_lv2:P103_OFFSET_END
 	lv2:default 0 ;
 	lv2:minimum 0 ;
 	lv2:maximum 2147483647 .
+	units:unit units:pc .
 
 samplv1_lv2:P104_LOOP_START
 	a lv2:Parameter ;
@@ -885,6 +888,7 @@ samplv1_lv2:P104_LOOP_START
 	lv2:default 0 ;
 	lv2:minimum 0 ;
 	lv2:maximum 2147483647 .
+	units:unit units:pc .
 
 samplv1_lv2:P105_LOOP_END
 	a lv2:Parameter ;
@@ -893,6 +897,7 @@ samplv1_lv2:P105_LOOP_END
 	lv2:default 0 ;
 	lv2:minimum 0 ;
 	lv2:maximum 2147483647 .
+	units:unit units:pc .
 
 samplv1_lv2:P106_LOOP_FADE
 	a lv2:Parameter ;
@@ -982,7 +987,7 @@ samplv1_lv2:G201_CHO1
 	a lv2pg:InputGroup;
 	lv2:name "Effects - Chorus" ;
 	lv2:symbol "CHO1" .
-	
+
 samplv1_lv2:G202_FLA1
 	a lv2pg:InputGroup;
 	lv2:name "Effects - Flanger" ;

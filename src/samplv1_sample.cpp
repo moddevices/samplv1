@@ -176,10 +176,8 @@ bool samplv1_sample::open ( const char *filename, float freq0, uint16_t otabs )
 	updateOffset();
 	updateLoop();
 
-#ifndef CONFIG_LV2_NO_GUI
 	m_sample_loaded = true;
 	m_sample_changed = true;
-#endif
 
 	return true;
 }

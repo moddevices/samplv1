@@ -619,14 +619,13 @@ void samplv1_lv2::run ( uint32_t nframes )
 		samplv1_sample *pSample = samplv1::sample();
 		int sampleLength = pSample->length();
 
-		if ((sampleLength > 0) && (pSample->sampleLoaded()) && pSample->sampleChaned()) {
+		if ((sampleLength > 0) && (pSample->sampleLoaded()) && pSample->sampleChanged()) {
 
 			const float *pFrames = pSample->frames(0, 0);
 			const uint16_t channels = pSample->channels();
 
             const int DATA_SIZE = (channels >= 2) ? 512 : 256;
 			float wave_form_out[DATA_SIZE];
-			bool changed = false;
 			for (uint32_t s = 0; s < DATA_SIZE; s++) {
 				int sample_index = (int)((pSample->length() / DATA_SIZE) * s);
 				const float frame = pFrames[sample_index];
