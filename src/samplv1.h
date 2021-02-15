@@ -33,6 +33,7 @@ class samplv1_sample;
 class samplv1_controls;
 class samplv1_programs;
 
+#define CONFIG_LV2_NO_GUI 1
 
 //-------------------------------------------------------------------------
 // samplv1 - decl.
