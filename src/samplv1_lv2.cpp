@@ -608,14 +608,6 @@ void samplv1_lv2::run ( uint32_t nframes )
 
 	// Send update to UI if sample has changed due to state restore
 	if (update_notify) {
-		patch_get(0);
-		update_notify = false;
-		return;
-	}
-
-
-	if (m_atom_out) {
-
 		samplv1_sample *pSample = samplv1::sample();
 		int sampleLength = pSample->length();
 
@@ -636,7 +628,14 @@ void samplv1_lv2::run ( uint32_t nframes )
 			/* close off atom-sequence */
 			lv2_atom_forge_pop (&m_forge, &m_notify_frame);
 		}
+		patch_get(0);
+		update_notify = false;
+		return;
 	}
+
+	//if (m_atom_out) {
+
+	//}
 }
 
 
