@@ -100,7 +100,7 @@ samplv1_lv2::samplv1_lv2 (
 	update_notify = false;
 
 #ifndef CONFIG_LV2_NO_GUI
-	sampleChanged = false;
+    prev_reverse = false;
 #endif
 
 	const LV2_Options_Option *host_options = nullptr;
@@ -606,36 +606,39 @@ void samplv1_lv2::run ( uint32_t nframes )
 	// test for sample offset/loop changes
 	samplv1::sampleOffsetLoopTest();
 
-	// Send update to UI if sample has changed due to state restore
-	if (update_notify) {
-		samplv1_sample *pSample = samplv1::sample();
+	samplv1_sample *pSample = samplv1::sample();
+
+	//send sample drawing to atom port
+	if (((samplv1::isReverse() != prev_reverse) || pSample->sampleChanged()) && m_atom_out) {
+
 		int sampleLength = pSample->length();
 
-		if ((sampleLength > 0) && (pSample->sampleLoaded()) && pSample->sampleChanged()) {
+		if ((sampleLength > 0) && pSample->sampleLoaded()) {
 
 			const float *pFrames = pSample->frames(0, 0);
 			const uint16_t channels = pSample->channels();
 
-            const int DATA_SIZE = (channels >= 2) ? 512 : 256;
+			const int DATA_SIZE = (channels >= 2) ? 512 : 256;
 			float wave_form_out[DATA_SIZE];
 			for (uint32_t s = 0; s < DATA_SIZE; s++) {
 				int sample_index = (int)((pSample->length() / DATA_SIZE) * s);
 				const float frame = pFrames[sample_index];
-				wave_form_out[s] = 0.5 + frame;
+				wave_form_out[s] = frame;
 			}
 			tx_to_gui(&m_forge, &m_urids, m_urids.p109_wave_form_data, wave_form_out, DATA_SIZE);
-			pSample->setSampleChanged(false);
 			/* close off atom-sequence */
 			lv2_atom_forge_pop (&m_forge, &m_notify_frame);
+			pSample->setSampleChanged(false);
 		}
+		prev_reverse = samplv1::isReverse();
+	}
+
+	// Send update to UI if sample has changed due to state restore
+	if (update_notify) {
 		patch_get(0);
 		update_notify = false;
 		return;
 	}
-
-	//if (m_atom_out) {
-
-	//}
 }
 
 

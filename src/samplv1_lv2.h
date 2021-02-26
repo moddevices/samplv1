@@ -30,7 +30,7 @@
 
 #include "lv2/lv2plug.in/ns/ext/worker/worker.h"
 
-#define CONFIG_LV2_NO_GUI
+//#define CONFIG_LV2_NO_GUI true
 
 #define SAMPLV1_LV2_URI "http://samplv1.sourceforge.net/lv2"
 #define SAMPLV1_LV2_PREFIX SAMPLV1_LV2_URI "#"
@@ -222,8 +222,8 @@ private:
 #ifndef CONFIG_LV2_NO_GUI
 	static QApplication *g_qapp_instance;
 	static unsigned int  g_qapp_refcount;
-	bool sampleChanged;
 #endif
+	bool prev_reverse;
 };
 
 
